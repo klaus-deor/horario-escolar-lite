@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-blue-700 mb-2">
-          Dashboard - Colégio Novo Ciclo
+          Dashboard
         </h1>
         <p className="text-gray-600">
           Sistema de organização de horários escolares
