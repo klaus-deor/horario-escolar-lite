@@ -46,8 +46,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-blue-700 mb-2">
-          Dashboard
+        <h1 className="text-3xl font-bold text-gray-700 mb-2">
+          Dashboard - Horário Escolar
         </h1>
         <p className="text-gray-600">
           Sistema de organização de horários escolares
