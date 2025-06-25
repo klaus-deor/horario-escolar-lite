@@ -19,6 +19,10 @@ export interface Turma {
     materiaId: string
     aulasPorSemana: number
   }[]
+  dobradinhas: {
+    permitirDobradinhas: boolean
+    materiasPermitidas: string[] // IDs das matérias que podem ter dobradinha
+  }
 }
 
 export interface AulaSchedule {
@@ -38,7 +42,7 @@ export interface Schedule {
 }
 
 export interface Conflito {
-  tipo: 'professor_duplo' | 'sem_professor' | 'horario_indisponivel'
+  tipo: 'professor_duplo' | 'sem_professor' | 'horario_indisponivel' | 'dobradinha_invalida'
   descricao: string
   turma?: string
   dia?: string
