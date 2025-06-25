@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Turma, Materia } from '../types'
-import { School, Plus } from 'lucide-react'
+import { School, Plus, Clock } from 'lucide-react'
 
 interface FormTurmaProps {
   subjects: Materia[]
@@ -22,6 +22,15 @@ const FormTurma: React.FC<FormTurmaProps> = ({
       [m.materiaId]: m.aulasPorSemana
     }), {}) || {}
   )
+  
+  // Estados para dobradinhas
+  const [permitirDobradinhas, setPermitirDobradinhas] = useState(
+    initialData?.dobradinhas?.permitirDobradinhas || false
+  )
+  const [materiasDobradinhas, setMateriasDobradinhas] = useState<string[]>(
+    initialData?.dobradinhas?.materiasPermitidas || []
+  )
+  
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const validateForm = () => {
@@ -53,7 +62,11 @@ const FormTurma: React.FC<FormTurmaProps> = ({
         .map(([materiaId, aulasPorSemana]) => ({
           materiaId,
           aulasPorSemana
-        }))
+        })),
+      dobradinhas: {
+        permitirDobradinhas,
+        materiasPermitidas: permitirDobradinhas ? materiasDobradinhas : []
+      }
     }
     
     onSubmit(turma)
@@ -61,6 +74,8 @@ const FormTurma: React.FC<FormTurmaProps> = ({
     if (!initialData) {
       setNome('')
       setMaterias({})
+      setPermitirDobradinhas(false)
+      setMateriasDobradinhas([])
     }
   }
 
@@ -70,6 +85,19 @@ const FormTurma: React.FC<FormTurmaProps> = ({
       [materiaId]: Math.max(0, Math.min(10, aulas))
     }))
   }
+
+  const handleDobradinhaMateriaChange = (materiaId: string) => {
+    setMateriasDobradinhas(prev => 
+      prev.includes(materiaId)
+        ? prev.filter(id => id !== materiaId)
+        : [...prev, materiaId]
+    )
+  }
+
+  // Filtrar apenas matérias que têm aulas configuradas
+  const materiasComAulasConfiguradas = subjects.filter(subject => 
+    materias[subject.id] && materias[subject.id] > 0
+  )
 
   return (
     <div className="card">
@@ -125,6 +153,60 @@ const FormTurma: React.FC<FormTurmaProps> = ({
             </div>
           )}
           {errors.materias && <p className="text-red-500 text-sm mt-1">{errors.materias}</p>}
+        </div>
+
+        {/* Configuração de Dobradinhas */}
+        <div className="border-t pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Clock className="h-5 w-5 text-blue-700" />
+            <label className="label mb-0">Configuração de Dobradinhas</label>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="permitirDobradinhas"
+                checked={permitirDobradinhas}
+                onChange={(e) => setPermitirDobradinhas(e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="permitirDobradinhas" className="text-sm font-medium text-gray-700">
+                Permitir aulas em sequência (dobradinha)
+              </label>
+            </div>
+            
+            <div className="text-xs text-gray-600 ml-6 mb-3">
+              💡 <strong>Dobradinha:</strong> Máximo de 2 aulas seguidas da mesma matéria no mesmo dia
+            </div>
+
+            {permitirDobradinhas && materiasComAulasConfiguradas.length > 0 && (
+              <div className="ml-6 space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Quais matérias podem ter dobradinha?
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {materiasComAulasConfiguradas.map(materia => (
+                    <label key={materia.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={materiasDobradinhas.includes(materia.id)}
+                        onChange={() => handleDobradinhaMateriaChange(materia.id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">{materia.nome}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {permitirDobradinhas && materiasComAulasConfiguradas.length === 0 && (
+              <div className="ml-6 text-sm text-yellow-600">
+                ⚠️ Configure primeiro as aulas das matérias para selecionar dobradinhas
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex space-x-3">
