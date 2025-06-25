@@ -1,17 +1,15 @@
 import React from 'react'
-import { Schedule, Professor, Materia, Turma, DIAS_SEMANA, HORARIOS } from '../types'
+import { Schedule, Turma, DIAS_SEMANA, HORARIOS } from '../types'
 
 interface ScheduleGridProps {
   schedule: Schedule
-  teachers: Professor[]
-  subjects: Materia[]
+  teachers: any[]
+  subjects: any[]
   classes: Turma[]
 }
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ 
   schedule, 
-  teachers, 
-  subjects, 
   classes 
 }) => {
   const turma = classes.find(c => c.id === schedule.turmaId)
