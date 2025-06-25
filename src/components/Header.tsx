@@ -57,11 +57,10 @@ const Header: React.FC = () => {
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   location.pathname === path
                     ? 'text-blue-700 shadow-sm'
-                    : 'text-gray-600 hover:text-blue-700'
+                    : 'text-gray-600 hover:text-blue-700 hover:bg-yellow-100'
                 }`}
                 style={{
-                  backgroundColor: location.pathname === path ? '#FFCF49' : undefined,
-                  ':hover': { backgroundColor: '#FFF8DC' }
+                  backgroundColor: location.pathname === path ? '#FFCF49' : undefined
                 }}
               >
                 <Icon className="h-4 w-4" />
@@ -73,10 +72,9 @@ const Header: React.FC = () => {
           {/* Mobile menu */}
           <div className="md:hidden">
             <select 
-              className="text-sm border rounded-md px-2 py-1 text-blue-700"
+              className="text-sm border rounded-md px-2 py-1 text-blue-700 bg-yellow-50"
               value={location.pathname}
               onChange={(e) => window.location.href = e.target.value}
-              style={{ backgroundColor: '#FFF8DC' }}
             >
               {navItems.map(({ path, label }) => (
                 <option key={path} value={path}>{label}</option>
