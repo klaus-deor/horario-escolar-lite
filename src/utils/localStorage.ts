@@ -31,6 +31,21 @@ const validateClass = (data: any): data is Turma => {
     Array.isArray(data.materias)
 }
 
+// Função para migrar dados antigos para o novo formato
+const migrateClassData = (data: any): Turma => {
+  // Se não tem configuração de dobradinhas, adicionar valores padrão
+  if (!data.dobradinhas) {
+    return {
+      ...data,
+      dobradinhas: {
+        permitirDobradinhas: false,
+        materiasPermitidas: []
+      }
+    }
+  }
+  return data
+}
+
 // Professores
 export const getTeachers = (): Professor[] => {
   try {
@@ -86,7 +101,12 @@ export const getClasses = (): Turma[] => {
     if (!data) return []
     
     const parsed = JSON.parse(data)
-    return Array.isArray(parsed) ? parsed.filter(validateClass) : []
+    if (!Array.isArray(parsed)) return []
+    
+    // Migrar dados antigos e validar
+    return parsed
+      .map(migrateClassData)
+      .filter(validateClass)
   } catch (error) {
     console.error('Erro ao carregar turmas:', error)
     return []
@@ -133,7 +153,8 @@ export const exportAllData = () => {
     subjects: getSubjects(),
     classes: getClasses(),
     schedules: getSchedules(),
-    exportDate: new Date().toISOString()
+    exportDate: new Date().toISOString(),
+    version: '2.0' // Versão com suporte a dobradinhas
   }
   
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
