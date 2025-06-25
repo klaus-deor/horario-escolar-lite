@@ -21,7 +21,7 @@ const Header: React.FC = () => {
             <School className="h-8 w-8 text-primary-600" />
             <h1 className="text-xl font-bold text-gray-900">
               Colégio Novo Ciclo | Horário Escolar
-            </h1>
+            </h1> 
           </div>
           
           <nav className="hidden md:flex space-x-1">
