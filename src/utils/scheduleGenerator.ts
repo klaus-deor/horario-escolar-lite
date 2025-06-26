@@ -40,7 +40,7 @@ export const generateSchedule = (
         continue
       }
       
-      // Alocar aulas para esta matéria com distribuição inteligente
+      // Alocar aulas para esta matéria
       let aulasAlocadas = 0
       const aulasNecessarias = materiaInfo.aulasPorSemana
       
@@ -48,16 +48,82 @@ export const generateSchedule = (
       const podeTermDobradinha = turma.dobradinhas?.permitirDobradinhas && 
                                 turma.dobradinhas?.materiasPermitidas.includes(materiaInfo.materiaId)
       
-      // Array para armazenar todas as possibilidades de alocação
-      const possibilidades: Array<{dia: string, hora: number, professor: Professor}> = []
+      // Embaralhar dias para distribuição aleatória
+      const diasEmbaralhados = [...DIAS_SEMANA].sort(() => Math.random() - 0.5)
       
-      // Coletar todas as possibilidades
-      for (const dia of DIAS_SEMANA) {
-        for (const hora of HORARIOS) {
+      for (const dia of diasEmbaralhados) {
+        if (aulasAlocadas >= aulasNecessarias) break
+        
+        // Embaralhar horários para distribuição aleatória
+        const horariosEmbaralhados = [...HORARIOS].sort(() => Math.random() - 0.5)
+        
+        for (const hora of horariosEmbaralhados) {
+          if (aulasAlocadas >= aulasNecessarias) break
+          
           // Verificar se já tem aula neste horário
           if (schedule.grade[dia][hora]) continue
           
-          // Tentar encontrar um professor disponível
+          // Contar quantas aulas desta matéria já tem neste dia
+          const aulasNoDia = HORARIOS.filter(h => 
+            schedule.grade[dia][h]?.materiaId === materiaInfo.materiaId
+          ).length
+          
+          // Verificar se pode alocar dobradinha (2 aulas seguidas)
+          if (podeTermDobradinha && aulasNecessarias - aulasAlocadas >= 2 && aulasNoDia === 0) {
+            // Tentar alocar dobradinha se há horário seguinte disponível
+            const proximaHora = HORARIOS[HORARIOS.indexOf(hora) + 1]
+            
+            if (proximaHora && !schedule.grade[dia][proximaHora]) {
+              // Encontrar professor disponível para ambos os horários
+              const professorDisponivel = professoresDisponiveis.find(prof => {
+                const profKey1 = `${prof.id}-${dia}-${hora}`
+                const profKey2 = `${prof.id}-${dia}-${proximaHora}`
+                
+                return (
+                  prof.diasDisponiveis.includes(dia) &&
+                  prof.horariosDisponiveis.includes(hora) &&
+                  prof.horariosDisponiveis.includes(proximaHora) &&
+                  !professorAllocation[profKey1] &&
+                  !professorAllocation[profKey2]
+                )
+              })
+              
+              if (professorDisponivel) {
+                // Alocar dobradinha
+                schedule.grade[dia][hora] = {
+                  materia: materia.nome,
+                  professor: professorDisponivel.nome,
+                  materiaId: materia.id,
+                  professorId: professorDisponivel.id
+                }
+                
+                schedule.grade[dia][proximaHora] = {
+                  materia: materia.nome,
+                  professor: professorDisponivel.nome,
+                  materiaId: materia.id,
+                  professorId: professorDisponivel.id
+                }
+                
+                // Marcar professor como ocupado em ambos os horários
+                const profKey1 = `${professorDisponivel.id}-${dia}-${hora}`
+                const profKey2 = `${professorDisponivel.id}-${dia}-${proximaHora}`
+                professorAllocation[profKey1] = turma.id
+                professorAllocation[profKey2] = turma.id
+                
+                aulasAlocadas += 2
+                continue
+              }
+            }
+          }
+          
+          // Se não pode ou não conseguiu dobradinha, tentar aula simples
+          // Mas não pode ter mais de 2 aulas da mesma matéria no mesmo dia
+          if (aulasNoDia >= 2) continue
+          
+          // Se já tem 1 aula no dia e não permite dobradinha, pular
+          if (!podeTermDobradinha && aulasNoDia >= 1) continue
+          
+          // Encontrar professor disponível para esta aula
           const professorDisponivel = professoresDisponiveis.find(prof => {
             const profKey = `${prof.id}-${dia}-${hora}`
             
@@ -69,65 +135,20 @@ export const generateSchedule = (
           })
           
           if (professorDisponivel) {
-            possibilidades.push({ dia, hora, professor: professorDisponivel })
+            // Alocar aula simples
+            schedule.grade[dia][hora] = {
+              materia: materia.nome,
+              professor: professorDisponivel.nome,
+              materiaId: materia.id,
+              professorId: professorDisponivel.id
+            }
+            
+            // Marcar professor como ocupado
+            const profKey = `${professorDisponivel.id}-${dia}-${hora}`
+            professorAllocation[profKey] = turma.id
+            
+            aulasAlocadas++
           }
-        }
-      }
-      
-      // Algoritmo de distribuição inteligente
-      const aulasAlocadasPorDia: { [dia: string]: number } = {}
-      DIAS_SEMANA.forEach(dia => { aulasAlocadasPorDia[dia] = 0 })
-      
-      // Função para verificar se pode alocar uma aula
-      const podeAlocarAula = (dia: string, hora: number): boolean => {
-        // Verificar se já tem aula neste horário
-        if (schedule.grade[dia][hora]) return false
-        
-        // Se não permite dobradinha, não pode ter mais de 1 aula da mesma matéria no dia
-        if (!podeTermDobradinha && aulasAlocadasPorDia[dia] >= 1) {
-          return false
-        }
-        
-        // Se permite dobradinha, máximo 2 aulas da mesma matéria no dia
-        if (podeTermDobradinha && aulasAlocadasPorDia[dia] >= 2) {
-          return false
-        }
-        
-        // Se já tem 1 aula no dia e permite dobradinha, verificar se pode ser sequencial
-        if (podeTermDobradinha && aulasAlocadasPorDia[dia] === 1) {
-          // Verificar se tem uma aula da mesma matéria adjacente
-          const horaAnterior = hora - 1
-          const horaPosterior = hora + 1
-          
-          const temAulaAnterior = schedule.grade[dia][horaAnterior]?.materiaId === materiaInfo.materiaId
-          const temAulaPosterior = schedule.grade[dia][horaPosterior]?.materiaId === materiaInfo.materiaId
-          
-          // Só permite se for adjacente a uma aula já alocada (dobradinha)
-          return temAulaAnterior || temAulaPosterior
-        }
-        
-        return true
-      }
-      
-      // Priorizar distribuição uniforme ao longo da semana
-      for (const { dia, hora, professor } of possibilidades) {
-        if (aulasAlocadas >= aulasNecessarias) break
-        
-        if (podeAlocarAula(dia, hora)) {
-          // Alocar aula
-          schedule.grade[dia][hora] = {
-            materia: materia.nome,
-            professor: professor.nome,
-            materiaId: materia.id,
-            professorId: professor.id
-          }
-          
-          // Marcar professor como ocupado neste horário
-          const profKey = `${professor.id}-${dia}-${hora}`
-          professorAllocation[profKey] = turma.id
-          
-          aulasAlocadas++
-          aulasAlocadasPorDia[dia]++
         }
       }
       
@@ -139,7 +160,7 @@ export const generateSchedule = (
         })
       }
       
-      // Verificar se há violação de regras de dobradinha
+      // Validar que não há mais de 2 aulas seguidas da mesma matéria
       for (const dia of DIAS_SEMANA) {
         let aulasSequenciais = 0
         let maxSequencia = 0
@@ -153,18 +174,21 @@ export const generateSchedule = (
           }
         }
         
-        // Verificar violações
+        // Verificar violações - máximo 2 aulas seguidas
+        if (maxSequencia > 2) {
+          conflicts.push({
+            tipo: 'dobradinha_invalida',
+            descricao: `ERRO: ${materia.nome} tem ${maxSequencia} aulas seguidas na ${dia} para ${turma.nome}. Máximo permitido é 2 (dobradinha)`,
+            turma: turma.nome,
+            dia
+          })
+        }
+        
+        // Se não permite dobradinha, não pode ter mais de 1 aula seguida
         if (!podeTermDobradinha && maxSequencia > 1) {
           conflicts.push({
             tipo: 'dobradinha_invalida',
             descricao: `${materia.nome} tem ${maxSequencia} aulas seguidas na ${dia} para ${turma.nome}, mas dobradinhas não estão permitidas`,
-            turma: turma.nome,
-            dia
-          })
-        } else if (podeTermDobradinha && maxSequencia > 2) {
-          conflicts.push({
-            tipo: 'dobradinha_invalida',
-            descricao: `${materia.nome} tem ${maxSequencia} aulas seguidas na ${dia} para ${turma.nome}, máximo permitido é 2`,
             turma: turma.nome,
             dia
           })
