@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { School, Edit, Trash2, Plus } from 'lucide-react'
+import { School, Edit, Trash2, Plus, Clock } from 'lucide-react'
 import { Turma } from '../types'
 import { useClasses, useSubjects } from '../hooks/useLocalStorage'
 import FormTurma from '../components/FormTurma'
@@ -127,6 +127,36 @@ const CadastroTurmas: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Configuração de Dobradinhas */}
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-700">Dobradinhas:</span>
+                      </div>
+                      
+                      {turma.dobradinhas?.permitirDobradinhas ? (
+                        <div>
+                          <p className="text-xs text-blue-600 mb-1">✅ Permitidas para:</p>
+                          {turma.dobradinhas.materiasPermitidas.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {turma.dobradinhas.materiasPermitidas.map(materiaId => (
+                                <span 
+                                  key={materiaId}
+                                  className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs"
+                                >
+                                  {getSubjectName(materiaId)}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-blue-600">Nenhuma matéria selecionada</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-blue-600">❌ Não permitidas</p>
+                      )}
+                    </div>
                     
                     <div className="mt-3 text-sm text-gray-600">
                       <span className="font-medium">Total de aulas por semana:</span>
@@ -164,10 +194,16 @@ const CadastroTurmas: React.FC = () => {
       {classes.length > 0 && (
         <div className="card bg-purple-50 border-purple-200">
           <h3 className="text-lg font-semibold text-purple-800 mb-2">📊 Resumo</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-purple-700">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-purple-700">
             <div>
               <span className="font-medium">Total de turmas:</span>
               <span className="ml-2">{classes.length}</span>
+            </div>
+            <div>
+              <span className="font-medium">Com dobradinhas:</span>
+              <span className="ml-2">
+                {classes.filter(t => t.dobradinhas?.permitirDobradinhas).length}
+              </span>
             </div>
             <div>
               <span className="font-medium">Matérias mais utilizadas:</span>
