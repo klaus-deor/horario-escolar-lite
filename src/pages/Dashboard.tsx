@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
       label: 'Matérias',
       value: subjects.length,
       icon: BookOpen,
-      color: 'bg-blue-600',
+      color: 'bg-blue-700',
       link: '/cadastro/materias'
     },
     {
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
       label: 'Grades Geradas',
       value: schedules.length,
       icon: Calendar,
-      color: 'bg-yellow-500',
+      color: 'bg-blue-700',
       link: '/gerar-horario'
     }
   ]
