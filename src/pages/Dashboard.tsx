@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
       label: 'Turmas',
       value: classes.length,
       icon: School,
-      color: 'bg-blue-800',
+      color: 'bg-blue-700',
       link: '/cadastro/turmas'
     },
     {
