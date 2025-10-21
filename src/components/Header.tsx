@@ -36,35 +36,32 @@ const Header: React.FC = () => {
   ]
   
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white shadow-sm border-b border-gray-100">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-3">
-            <SpiralLogo className="h-10 w-10" />
+            <SpiralLogo className="h-12 w-12" />
             <div>
-              <h1 className="text-xl font-bold text-blue-700">
+              <h1 className="text-2xl font-light text-gray-900 tracking-tight">
                 Colégio Novo Ciclo
               </h1>
-              <p className="text-xs text-gray-600">Sistema de Horários</p>
+              <p className="text-sm text-gray-500 font-light">Sistema de Horários</p>
             </div>
           </div>
           
-          <nav className="hidden md:flex space-x-1">
+          <nav className="hidden md:flex space-x-2">
             {navItems.map(({ path, label, icon: Icon }) => (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                className={`flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                   location.pathname === path
-                    ? 'text-blue-700 shadow-sm'
-                    : 'text-gray-600 hover:text-blue-700 hover:bg-yellow-100'
+                    ? 'text-blue-700 bg-blue-50 border border-blue-100'
+                    : 'text-gray-600 hover:text-blue-700 hover:bg-gray-50'
                 }`}
-                style={{
-                  backgroundColor: location.pathname === path ? '#FFCF49' : undefined
-                }}
               >
-                <Icon className="h-4 w-4" />
-                <span className="font-medium">{label}</span>
+                <Icon className="h-5 w-5" />
+                <span>{label}</span>
               </Link>
             ))}
           </nav>
@@ -72,7 +69,7 @@ const Header: React.FC = () => {
           {/* Mobile menu */}
           <div className="md:hidden">
             <select 
-              className="text-sm border rounded-md px-2 py-1 text-blue-700 bg-yellow-50"
+              className="text-sm border border-gray-200 rounded-xl px-4 py-2 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={location.pathname}
               onChange={(e) => window.location.href = e.target.value}
             >

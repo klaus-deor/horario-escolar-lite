@@ -24,12 +24,12 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     <button
       onClick={handleExport}
       disabled={disabled}
-      className={`btn-secondary flex items-center space-x-2 ${className} ${
+      className={`bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors duration-300 flex items-center space-x-3 ${className} ${
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       }`}
       title="Exportar todos os dados como backup JSON"
     >
-      <Download className="h-4 w-4" />
+      <Download className="h-5 w-5" />
       <span>Exportar Dados</span>
     </button>
   )
